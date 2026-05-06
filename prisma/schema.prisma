@@ -1,0 +1,72 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --- TABEL PENGGUNA (KARYAWAN & ADMIN) ---
+model User {
+  id        Int        @id @default(autoincrement())
+  nama      String
+  email     String     @unique
+  password  String
+  role      Role       @default(KARYAWAN)
+  presensi  Presensi[] // Relasi: 1 User bisa punya banyak data presensi
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+enum Role {
+  ADMIN
+  KARYAWAN
+}
+
+// --- TABEL PRESENSI (KEHADIRAN) ---
+model Presensi {
+  id           Int       @id @default(autoincrement())
+  userId       Int
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  waktuMasuk   DateTime  @default(now())
+  waktuKeluar  DateTime?
+  latitude     Float
+  longitude    Float
+  akurasi      Float?    // FIKS: Kolom untuk menyimpan akurasi GPS (dalam meter)
+  fotoUrl      String?   
+  status       String    @default("HADIR") // Contoh: "HADIR", "TERLAMBAT", "IZIN"
+}
+
+// --- TABEL BARANG (STOK GUDANG) ---
+model Barang {
+  id           Int           @id @default(autoincrement())
+  kodeBarang   String        @unique
+  namaBarang   String
+  kategori     String?       
+  stok         Int           @default(0)
+  harga        Int           @default(0) 
+  batasMinimum Int           @default(5)
+  riwayatStok  RiwayatStok[] // Relasi ke tabel mutasi barang
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+// --- TABEL RIWAYAT STOK (BARANG MASUK/KELUAR) ---
+model RiwayatStok {
+  id          Int        @id @default(autoincrement())
+  barangId    Int
+  barang      Barang     @relation(fields: [barangId], references: [id], onDelete: Cascade)
+  tipe        TipeMutasi 
+  jumlah      Int
+  keterangan  String?    
+  createdAt   DateTime   @default(now())
+}
+
+enum TipeMutasi {
+  MASUK
+  KELUAR
+}
