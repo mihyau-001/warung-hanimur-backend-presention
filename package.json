@@ -1,7 +1,7 @@
 {
-  "name": "warung_hanimur_backend",
+  "name": "absen-hanimur-backend",
   "version": "0.0.1",
-  "description": "Backend System for Warung Hanimur",
+  "description": "Sistem Absensi Warung Hanimur & Gudang",
   "author": "Muhammad Ihya Ulumuddin",
   "private": true,
   "license": "UNLICENSED",
@@ -25,15 +25,19 @@
     "@nestjs/jwt": "^11.0.2",
     "@nestjs/mapped-types": "*",
     "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/swagger": "^11.4.2",
     "@prisma/client": "^6.19.3",
+    "bcrypt": "^6.0.0",
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.0",
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/testing": "^11.0.1",
+    "@types/bcrypt": "^6.0.0",
     "@types/express": "^5.0.0",
     "@types/jest": "^29.5.14",
     "@types/multer": "^2.1.0",
