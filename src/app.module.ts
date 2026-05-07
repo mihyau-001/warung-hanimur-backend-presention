@@ -11,7 +11,7 @@ import { UsersController } from './users/users.controller';
   imports: [
     PrismaModule, 
     PresensiModule, 
-    GudangModule
+    GudangModule,
   ],
   controllers: [
     AppController, 
