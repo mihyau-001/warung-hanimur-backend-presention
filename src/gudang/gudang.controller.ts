@@ -6,7 +6,8 @@ import {
   Patch, 
   Param, 
   Delete, 
-  ParseIntPipe 
+  ParseIntPipe,
+  Query
 } from '@nestjs/common';
 import { GudangService } from './gudang.service';
 import { CreateGudangDto } from './dto/create-gudang.dto';
@@ -16,23 +17,55 @@ import { UpdateGudangDto } from './dto/update-gudang.dto';
 export class GudangController {
   constructor(private readonly gudangService: GudangService) {}
 
+  // 1. Pendaftaran Barang Baru (Admin/Owner)
   @Post()
   create(@Body() createGudangDto: CreateGudangDto) {
-    // Digunakan untuk pendaftaran barang baru pertama kali
     return this.gudangService.create(createGudangDto);
   }
 
-  // --- FIKS: Tambahkan endpoint untuk Barang Masuk ---
+  // 2. Endpoint Barang Masuk (Purchasing/Owner)
+  // Digunakan setelah pembayaran berhasil dikonfirmasi
   @Post('barang-masuk')
-  async barangMasuk(@Body() data: any) {
-    // Menerima data noTransaksi, namaBarang, dan jumlah dari Flutter
+  async barangMasuk(@Body() data: { 
+    namaBarang: string; 
+    jumlah: number; 
+    noTransaksi: string; 
+    catatanBelanja?: string 
+  }) {
     return this.gudangService.prosesBarangMasuk(data);
   }
 
+  // 3. Endpoint Barang Keluar (Maker/Karyawan)
+  // Digunakan untuk mencatat daftar belanja atau pengeluaran barang
+  @Post('barang-keluar')
+  async barangKeluar(@Body() data: { 
+    namaBarang: string; 
+    jumlah: number; 
+    noTransaksi: string 
+  }) {
+    return this.gudangService.prosesBarangKeluar(data);
+  }
+
+  // 4. Ketersediaan Stok (Menu Utama)
   @Get()
   findAll() {
-    // Menampilkan semua stok barang di Warung Hanimur
     return this.gudangService.findAll();
+  }
+
+  // 5. Laporan Harian & Bulanan (Owner)
+  // Query param contoh: ?start=2026-05-01&end=2026-05-31
+  @Get('laporan')
+  getLaporan(
+    @Query('start') start: string, 
+    @Query('end') end: string
+  ) {
+    return this.gudangService.getLaporan({ start, end });
+  }
+
+  // 6. Data Struk untuk Printer Thermal 80mm
+  @Get('struk/:noTransaksi')
+  getStruk(@Param('noTransaksi') noTransaksi: string) {
+    return this.gudangService.getStrukData(noTransaksi);
   }
 
   @Get(':id')
@@ -45,7 +78,6 @@ export class GudangController {
     @Param('id', ParseIntPipe) id: number, 
     @Body() updateGudangDto: UpdateGudangDto
   ) {
-    // Update stok manual atau koreksi data barang
     return this.gudangService.update(id, updateGudangDto);
   }
 

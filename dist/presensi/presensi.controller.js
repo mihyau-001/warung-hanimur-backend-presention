@@ -20,7 +20,6 @@ const path_1 = require("path");
 const presensi_service_1 = require("./presensi.service");
 const create_presensi_dto_1 = require("./dto/create-presensi.dto");
 let PresensiController = class PresensiController {
-    presensiService;
     constructor(presensiService) {
         this.presensiService = presensiService;
     }

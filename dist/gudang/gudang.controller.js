@@ -18,7 +18,6 @@ const gudang_service_1 = require("./gudang.service");
 const create_gudang_dto_1 = require("./dto/create-gudang.dto");
 const update_gudang_dto_1 = require("./dto/update-gudang.dto");
 let GudangController = class GudangController {
-    gudangService;
     constructor(gudangService) {
         this.gudangService = gudangService;
     }
@@ -28,8 +27,17 @@ let GudangController = class GudangController {
     async barangMasuk(data) {
         return this.gudangService.prosesBarangMasuk(data);
     }
+    async barangKeluar(data) {
+        return this.gudangService.prosesBarangKeluar(data);
+    }
     findAll() {
         return this.gudangService.findAll();
+    }
+    getLaporan(start, end) {
+        return this.gudangService.getLaporan({ start, end });
+    }
+    getStruk(noTransaksi) {
+        return this.gudangService.getStrukData(noTransaksi);
     }
     findOne(id) {
         return this.gudangService.findOne(id);
@@ -57,11 +65,33 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], GudangController.prototype, "barangMasuk", null);
 __decorate([
+    (0, common_1.Post)('barang-keluar'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], GudangController.prototype, "barangKeluar", null);
+__decorate([
     (0, common_1.Get)(),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], GudangController.prototype, "findAll", null);
+__decorate([
+    (0, common_1.Get)('laporan'),
+    __param(0, (0, common_1.Query)('start')),
+    __param(1, (0, common_1.Query)('end')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", void 0)
+], GudangController.prototype, "getLaporan", null);
+__decorate([
+    (0, common_1.Get)('struk/:noTransaksi'),
+    __param(0, (0, common_1.Param)('noTransaksi')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], GudangController.prototype, "getStruk", null);
 __decorate([
     (0, common_1.Get)(':id'),
     __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),

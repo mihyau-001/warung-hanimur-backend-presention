@@ -13,7 +13,6 @@ exports.GudangService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
 let GudangService = class GudangService {
-    prisma;
     constructor(prisma) {
         this.prisma = prisma;
     }
@@ -30,9 +29,8 @@ let GudangService = class GudangService {
             const barang = await tx.barang.findFirst({
                 where: { namaBarang: data.namaBarang },
             });
-            if (!barang) {
+            if (!barang)
                 throw new common_1.NotFoundException(`Barang ${data.namaBarang} tidak ditemukan`);
-            }
             const updatedBarang = await tx.barang.update({
                 where: { id: barang.id },
                 data: { stok: { increment: data.jumlah } },
@@ -42,7 +40,34 @@ let GudangService = class GudangService {
                     barangId: barang.id,
                     jumlah: data.jumlah,
                     tipe: 'MASUK',
-                    keterangan: `Nomor Transaksi: ${data.noTransaksi}`,
+                    noTransaksi: data.noTransaksi || `IN-${Date.now()}`,
+                    status: 'COMPLETED',
+                    keterangan: `Note: ${data.catatanBelanja || 'Tanpa catatan'}`,
+                },
+            });
+            return updatedBarang;
+        });
+    }
+    async prosesBarangKeluar(data) {
+        return this.prisma.$transaction(async (tx) => {
+            const barang = await tx.barang.findFirst({
+                where: { namaBarang: data.namaBarang },
+            });
+            if (!barang || barang.stok < data.jumlah) {
+                throw new common_1.ForbiddenException('Stok tidak mencukupi atau barang tidak ada');
+            }
+            const updatedBarang = await tx.barang.update({
+                where: { id: barang.id },
+                data: { stok: { decrement: data.jumlah } },
+            });
+            await tx.riwayatStok.create({
+                data: {
+                    barangId: barang.id,
+                    jumlah: data.jumlah,
+                    tipe: 'KELUAR',
+                    noTransaksi: data.noTransaksi || `OUT-${Date.now()}`,
+                    status: 'PENDING',
+                    keterangan: data.keterangan || 'Barang Keluar',
                 },
             });
             return updatedBarang;
@@ -50,14 +75,39 @@ let GudangService = class GudangService {
     }
     async findAll() {
         return this.prisma.barang.findMany({
+            orderBy: { namaBarang: 'asc' },
+            select: {
+                id: true,
+                namaBarang: true,
+                stok: true,
+                batasMinimum: true,
+                riwayatStok: {
+                    take: 5,
+                    orderBy: { createdAt: 'desc' }
+                }
+            }
+        });
+    }
+    async getLaporan(filter) {
+        return this.prisma.riwayatStok.findMany({
+            where: {
+                createdAt: {
+                    gte: new Date(filter.start),
+                    lte: new Date(filter.end),
+                },
+            },
+            include: { barang: true },
             orderBy: { createdAt: 'desc' },
-            include: { riwayatStok: true },
+        });
+    }
+    async getStrukData(noTransaksi) {
+        return this.prisma.riwayatStok.findUnique({
+            where: { noTransaksi: noTransaksi },
+            include: { barang: true },
         });
     }
     async findOne(id) {
-        const barang = await this.prisma.barang.findUnique({
-            where: { id },
-        });
+        const barang = await this.prisma.barang.findUnique({ where: { id } });
         if (!barang)
             throw new common_1.NotFoundException('Barang tidak ditemukan');
         return barang;
@@ -70,9 +120,7 @@ let GudangService = class GudangService {
     }
     async remove(id) {
         await this.prisma.riwayatStok.deleteMany({ where: { barangId: id } });
-        return this.prisma.barang.delete({
-            where: { id },
-        });
+        return this.prisma.barang.delete({ where: { id } });
     }
 };
 exports.GudangService = GudangService;
