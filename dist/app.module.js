@@ -23,7 +23,7 @@ exports.AppModule = AppModule = __decorate([
         imports: [
             prisma_module_1.PrismaModule,
             presensi_module_1.PresensiModule,
-            gudang_module_1.GudangModule
+            gudang_module_1.GudangModule,
         ],
         controllers: [
             app_controller_1.AppController,

@@ -6,25 +6,30 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
-  // 1. Konfigurasi Swagger (Tambahkan SwaggerModule agar tampil)
+  // 1. Konfigurasi Swagger
   const config = new DocumentBuilder()
     .setTitle('Absen Hanimur API')
     .setDescription('Sistem Absensi Warung Hanimur')
     .setVersion('1.0')
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, document); // Bisa diakses di /docs
+  SwaggerModule.setup('docs', app, document); 
 
-  // 2. WAJIB: Aktifkan CORS agar Flutter bisa akses
+  // 2. Aktifkan CORS (Sangat Penting untuk Flutter)
   app.enableCors(); 
   
   // 3. Gunakan Route Manual
   app.use('/api/auth', authRoutes); 
   
-  // 4. FIKS PORT: Mengikuti port dari Render atau default ke 3003 jika lokal
+  // 4. Sesuaikan Port untuk Vercel/Production
   const port = process.env.PORT || 3003;
   await app.listen(port);
   
-  console.log(`Application is running on: ${await app.getUrl()}`);
+  // Tambahkan baris ini untuk logging di Vercel Dashboard
+  console.log(`Application is running on port: ${port}`);
+  
+  return app.getHttpAdapter().getInstance(); // Baris tambahan untuk stabilitas di Vercel
 }
-bootstrap();
+
+// Ekspor bootstrap untuk Vercel (Opsional tapi membantu beberapa versi @vercel/node)
+export default bootstrap();

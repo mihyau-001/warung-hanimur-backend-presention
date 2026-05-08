@@ -11,9 +11,13 @@ async function bootstrap() {
         .setDescription('Sistem Absensi Warung Hanimur')
         .setVersion('1.0')
         .build();
+    const document = swagger_1.SwaggerModule.createDocument(app, config);
+    swagger_1.SwaggerModule.setup('docs', app, document);
     app.enableCors();
     app.use('/api/auth', authRoutes_1.default);
-    await app.listen(3003);
+    const port = process.env.PORT || 3003;
+    await app.listen(port);
+    console.log(`Application is running on: ${await app.getUrl()}`);
 }
 bootstrap();
 //# sourceMappingURL=main.js.map
